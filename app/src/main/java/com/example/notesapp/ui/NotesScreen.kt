@@ -10,11 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.notesapp.data.Note
+import com.example.notesapp.viewmodel.NotesViewModel
 
 @Composable
-fun NotesScreen() {
-    var notes by remember { mutableStateOf(listOf<Note>()) }
+fun NotesScreen(viewModel: NotesViewModel) {
+    val notes by viewModel.notes.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -31,15 +31,9 @@ fun NotesScreen() {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Heading
-            Text(
-                text = "Notes",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
+            Text(text = "Notes", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -49,7 +43,6 @@ fun NotesScreen() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Filtered notes
             val filteredNotes = notes.filter {
                 it.title.contains(searchQuery, ignoreCase = true)
             }
@@ -65,7 +58,7 @@ fun NotesScreen() {
                 LazyColumn {
                     items(filteredNotes) { note ->
                         NoteItem(note = note, onDeleteClick = {
-                            notes = notes.filter { it.id != note.id }
+                            viewModel.deleteNote(note)
                         })
                     }
                 }
@@ -76,9 +69,10 @@ fun NotesScreen() {
             AddNoteDialog(
                 onDismiss = { showDialog = false },
                 onAddNote = { title ->
-                    notes = notes + Note(id = notes.size + 1, title = title)
+                    viewModel.addNote(title)
                 }
             )
         }
     }
 }
+
