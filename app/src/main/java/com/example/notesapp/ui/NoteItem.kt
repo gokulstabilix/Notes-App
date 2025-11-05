@@ -11,9 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.example.notesapp.data.Note
+import androidx.compose.foundation.clickable
 
 @Composable
-fun NoteItem(note: Note, onDeleteClick: (Note) -> Unit) {
+fun NoteItem(note: Note, onDeleteClick: (Note) -> Unit, onEditClick: (Note) -> Unit) {
     // Get whether dark theme is active
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
@@ -26,7 +27,8 @@ fun NoteItem(note: Note, onDeleteClick: (Note) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onEditClick(note) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor

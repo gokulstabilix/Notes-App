@@ -10,17 +10,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.notesapp.data.Note
 import com.example.notesapp.viewmodel.NotesViewModel
 
 @Composable
 fun NotesScreen(viewModel: NotesViewModel) {
     val notes by viewModel.notes.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
+    var noteToEdit by remember { mutableStateOf<Note?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
+            FloatingActionButton(onClick = {
+                noteToEdit = null
+                showDialog = true
+            }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Note")
             }
         }
@@ -57,20 +62,32 @@ fun NotesScreen(viewModel: NotesViewModel) {
             } else {
                 LazyColumn {
                     items(filteredNotes) { note ->
-                        NoteItem(note = note, onDeleteClick = {
-                            viewModel.deleteNote(note)
-                        })
+                        NoteItem(
+                            note = note,
+                            onDeleteClick = {
+                                viewModel.deleteNote(note)
+                            },
+                            onEditClick = {
+                                noteToEdit = it
+                                showDialog = true
+                            }
+                        )
                     }
                 }
             }
         }
 
         if (showDialog) {
-            AddNoteDialog(
+            NoteDialog(
                 onDismiss = { showDialog = false },
-                onAddNote = { title ->
-                    viewModel.addNote(title)
-                }
+                onConfirm = {
+                    if (noteToEdit == null) {
+                        viewModel.addNote(it)
+                    } else {
+                        viewModel.updateNote(noteToEdit!!.copy(title = it))
+                    }
+                },
+                noteToEdit = noteToEdit
             )
         }
     }
