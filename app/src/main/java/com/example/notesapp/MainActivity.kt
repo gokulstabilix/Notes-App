@@ -10,7 +10,7 @@ import com.example.notesapp.repository.NoteRepository
 import com.example.notesapp.ui.NotesScreen
 import com.example.notesapp.ui.theme.NotesAppTheme
 import com.example.notesapp.viewmodel.NotesViewModel
-
+import androidx.activity.enableEdgeToEdge
 
 import com.example.notesapp.data.NoteDatabase
 import com.example.notesapp.ui.NotesViewModelFactory
@@ -19,7 +19,7 @@ import com.example.notesapp.ui.NotesViewModelFactory
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        enableEdgeToEdge()
         val db = Room.databaseBuilder(
             applicationContext,
             NoteDatabase::class.java,
