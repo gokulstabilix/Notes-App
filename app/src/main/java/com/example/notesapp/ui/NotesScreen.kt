@@ -19,6 +19,10 @@ fun NotesScreen(viewModel: NotesViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var noteToEdit by remember { mutableStateOf<Note?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var noteToDelete by remember { mutableStateOf<Note?>(null) }
+
+
 
     Scaffold(
         floatingActionButton = {
@@ -65,7 +69,10 @@ fun NotesScreen(viewModel: NotesViewModel) {
                         NoteItem(
                             note = note,
                             onDeleteClick = {
-                                viewModel.deleteNote(note)
+//                                viewModel.deleteNote(note)
+                                    noteToDelete = note
+                                    showDeleteDialog = true
+
                             },
                             onEditClick = {
                                 noteToEdit = it
@@ -88,6 +95,35 @@ fun NotesScreen(viewModel: NotesViewModel) {
                     }
                 },
                 noteToEdit = noteToEdit
+            )
+        }
+
+        if (showDeleteDialog && noteToDelete != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Note") },
+                text = { Text("Are you sure you want to delete this note?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.deleteNote(noteToDelete!!)
+                            showDeleteDialog = false
+                            noteToDelete = null
+                        }
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            noteToDelete = null
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }
