@@ -14,22 +14,19 @@ import com.example.notesapp.data.Note
 import com.example.notesapp.viewmodel.NotesViewModel
 
 @Composable
-fun NotesScreen(viewModel: NotesViewModel) {
+fun NotesScreen(
+    viewModel: NotesViewModel,
+    onAddClick: () -> Unit,
+    onEditClick: (Int) -> Unit
+) {
     val notes by viewModel.notes.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
-    var noteToEdit by remember { mutableStateOf<Note?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var noteToDelete by remember { mutableStateOf<Note?>(null) }
 
-
-
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                noteToEdit = null
-                showDialog = true
-            }) {
+            FloatingActionButton(onClick = { onAddClick() }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Note")
             }
         }
@@ -69,33 +66,14 @@ fun NotesScreen(viewModel: NotesViewModel) {
                         NoteItem(
                             note = note,
                             onDeleteClick = {
-//                                viewModel.deleteNote(note)
-                                    noteToDelete = note
-                                    showDeleteDialog = true
-
+                                noteToDelete = note
+                                showDeleteDialog = true
                             },
-                            onEditClick = {
-                                noteToEdit = it
-                                showDialog = true
-                            }
+                            onEditClick = { onEditClick(note.id) }
                         )
                     }
                 }
             }
-        }
-
-        if (showDialog) {
-            NoteDialog(
-                onDismiss = { showDialog = false },
-                onConfirm = {
-                    if (noteToEdit == null) {
-                        viewModel.addNote(it)
-                    } else {
-                        viewModel.updateNote(noteToEdit!!.copy(title = it))
-                    }
-                },
-                noteToEdit = noteToEdit
-            )
         }
 
         if (showDeleteDialog && noteToDelete != null) {
@@ -115,12 +93,7 @@ fun NotesScreen(viewModel: NotesViewModel) {
                     }
                 },
                 dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showDeleteDialog = false
-                            noteToDelete = null
-                        }
-                    ) {
+                    TextButton(onClick = { showDeleteDialog = false }) {
                         Text("Cancel")
                     }
                 }
@@ -128,4 +101,5 @@ fun NotesScreen(viewModel: NotesViewModel) {
         }
     }
 }
+
 

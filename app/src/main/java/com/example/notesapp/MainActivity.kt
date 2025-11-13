@@ -10,6 +10,8 @@ import com.example.notesapp.ui.theme.NotesAppTheme
 import com.example.notesapp.viewmodel.NotesViewModel
 import androidx.activity.enableEdgeToEdge
 import com.example.notesapp.ui.NotesViewModelFactory
+import androidx.navigation.compose.rememberNavController
+import com.example.notesapp.nav.NotesNavGraph
 
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +28,9 @@ class MainActivity : ComponentActivity() {
                 val viewModel: NotesViewModel = viewModel(
                     factory = NotesViewModelFactory(repository)
                 )
-                NotesScreen(viewModel)
+                val navController = rememberNavController()
+
+                NotesNavGraph(navController = navController, viewModel = viewModel)
             }
         }
     }
