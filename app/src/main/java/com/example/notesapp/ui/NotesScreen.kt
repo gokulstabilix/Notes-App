@@ -72,7 +72,9 @@ fun NotesScreen(
                     Text("No notes yet. Add a note!")
                 }
             } else {
-                LazyColumn {
+                LazyColumn ( modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 60.dp)
+                ){
                     items(filteredNotes) { note ->
                         NoteItem(
                             note = note,
