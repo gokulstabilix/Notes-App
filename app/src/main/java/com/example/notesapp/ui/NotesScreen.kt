@@ -5,10 +5,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.notesapp.data.Note
 import com.example.notesapp.viewmodel.NotesViewModel
@@ -39,12 +41,21 @@ fun NotesScreen(
         ) {
             Text(text = "Notes", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(20.dp))
-
-            OutlinedTextField(
+            TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 placeholder = { Text("Search notes...") },
-                modifier = Modifier.fillMaxWidth()
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                )
             )
 
             Spacer(modifier = Modifier.height(20.dp))

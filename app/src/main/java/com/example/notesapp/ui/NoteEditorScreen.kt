@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.notesapp.viewmodel.NotesViewModel
@@ -28,7 +29,7 @@ fun NoteEditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (noteId == null) "Add Note" else "Edit Note") },
+                title = { Text(if (noteId == null) "New Note" else "Edit Note") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -56,7 +57,14 @@ fun NoteEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+            ),
+            textStyle = MaterialTheme.typography.bodyLarge
         )
     }
 }
