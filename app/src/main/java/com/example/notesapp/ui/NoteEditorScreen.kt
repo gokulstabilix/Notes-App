@@ -20,6 +20,8 @@ import com.example.notesapp.viewmodel.NotesViewModel
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,20 +128,39 @@ fun NoteEditorScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // -------- IMAGE PREVIEW --------
-            selectedImage?.let {
-                Card(
+            selectedImage?.let { imageUri ->
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 200.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                        .heightIn(min = 200.dp)
                 ) {
-                    AsyncImage(
-                        model = it,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxWidth(),
-                        contentScale = ContentScale.Crop
-                    )
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 200.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    ) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    IconButton(
+                        onClick = { selectedImage = null },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Remove Image",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
