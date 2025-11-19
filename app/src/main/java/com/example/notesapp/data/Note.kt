@@ -9,5 +9,6 @@ import androidx.room.PrimaryKey
 data class Note(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
-    val  imagePath: String? = null
+    val  imagePath: String? = null,
+    val voicePath: String? = null
 )

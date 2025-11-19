@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -76,6 +77,14 @@ fun NoteItem(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
+                    if (note.voicePath != null) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = "Voice note",
+                            tint = textColor,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
                     IconButton(onClick = { onDeleteClick(note) }) {
                         Icon(
                             imageVector = Icons.Default.Delete,

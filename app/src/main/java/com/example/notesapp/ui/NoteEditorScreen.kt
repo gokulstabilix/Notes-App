@@ -1,13 +1,18 @@
 package com.example.notesapp.ui
 
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -15,12 +20,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Pause
 import com.example.notesapp.viewmodel.NotesViewModel
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 
@@ -38,8 +45,48 @@ fun NoteEditorScreen(
     var textState by remember {
         mutableStateOf(TextFieldValue(existingNote?.title ?: ""))
     }
+    var voicePath by remember { mutableStateOf(existingNote?.voicePath) }
+    var isRecording by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var pendingStartRecording by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val voiceNoteManager = remember { VoiceNoteManager(context) }
+    DisposableEffect(Unit) {
+        onDispose {
+            voiceNoteManager.release()
+        }
+    }
+
+    fun startRecording() {
+        val path = voiceNoteManager.startRecording()
+        if (path != null) {
+            voicePath = path
+            isRecording = true
+            isPlaying = false
+        }
+    }
+
+    fun stopRecording() {
+        val path = voiceNoteManager.stopRecording()
+        if (path != null) {
+            voicePath = path
+        }
+        isRecording = false
+    }
+
+    fun startPlayback() {
+        val path = voicePath ?: return
+        voiceNoteManager.startPlayback(path) {
+            isPlaying = false
+        }
+        isPlaying = true
+    }
+
+    fun pausePlayback() {
+        voiceNoteManager.pausePlayback()
+        isPlaying = false
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -53,6 +100,16 @@ fun NoteEditorScreen(
         }
     }
 
+    val recordPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted && pendingStartRecording) {
+            pendingStartRecording = false
+            startRecording()
+        } else {
+            pendingStartRecording = false
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,17 +131,40 @@ fun NoteEditorScreen(
                         Icon(Icons.Default.Add, contentDescription = "Pick Image")
                     }
 
+                    IconButton(onClick = {
+                        val hasPermission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                        if (hasPermission) {
+                            if (!isRecording) {
+                                startRecording()
+                            } else {
+                                stopRecording()
+                            }
+                        } else {
+                            pendingStartRecording = true
+                            recordPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    }) {
+                        Icon(
+                            Icons.Default.Mic,
+                            contentDescription = if (isRecording) "Stop Recording" else "Record Voice"
+                        )
+                    }
                     Button(
                         onClick = {
                             val text = textState.text.trim()
                             if (text.isNotEmpty()) {
                                 if (noteId == null) {
-                                    viewModel.addNote(text, selectedImage)
+                                    viewModel.addNote(text, selectedImage, voicePath)
                                 } else {
                                     viewModel.updateNote(
                                         existingNote!!.copy(
                                             title = text,
-                                            imagePath = selectedImage
+                                            imagePath = selectedImage,
+                                            voicePath = voicePath
                                         )
                                     )
                                 }
@@ -126,6 +206,84 @@ fun NoteEditorScreen(
             )
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            // -------- VOICE NOTE PREVIEW --------
+            when {
+                isRecording -> {
+                    // SHOW WHILE RECORDING
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 72.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Recording...", color = Color.Red)
+
+                            Row {
+                                IconButton(onClick = {
+                                    stopRecording()
+                                }) {
+                                    Icon(Icons.Default.Check, contentDescription = "Stop & Save Recording")
+                                }
+
+                                IconButton(onClick = {
+                                    isRecording = false
+                                    voiceNoteManager.cancelRecording()
+                                    voicePath = null
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Cancel")
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                voicePath != null -> {
+                    // SHOW AFTER RECORDING STOPPED
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 72.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Voice Note", style = MaterialTheme.typography.bodyMedium)
+
+                            Row {
+                                IconButton(onClick = {
+                                    if (isPlaying) pausePlayback() else startPlayback()
+                                }) {
+                                    Icon(
+                                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = if (isPlaying) "Pause" else "Play"
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
 
             // -------- IMAGE PREVIEW --------
             selectedImage?.let { imageUri ->

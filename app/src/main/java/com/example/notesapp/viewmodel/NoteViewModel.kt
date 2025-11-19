@@ -15,9 +15,9 @@ class NotesViewModel(private val repository: NoteRepository) : ViewModel() {
     val notes = repository.notes
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addNote(title: String, imagePath: String? ) {
+    fun addNote(title: String, imagePath: String?, voicePath: String?) {
         viewModelScope.launch {
-            repository.insert(Note(title = title, imagePath = imagePath))
+            repository.insert(Note(title = title, imagePath = imagePath, voicePath = voicePath))
         }
     }
 

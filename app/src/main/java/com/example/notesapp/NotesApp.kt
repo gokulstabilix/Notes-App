@@ -12,7 +12,9 @@ class NotesApp : Application() {
             this,
             NoteDatabase::class.java,
             "notes_db"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     val repository by lazy {
