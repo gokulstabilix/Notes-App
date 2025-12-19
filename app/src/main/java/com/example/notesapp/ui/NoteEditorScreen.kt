@@ -31,6 +31,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
+import androidx.core.app.ActivityCompat
+import android.app.Activity
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +55,7 @@ fun NoteEditorScreen(
     var pendingStartRecording by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val activity = context as Activity
     val voiceNoteManager = remember { VoiceNoteManager(context) }
     DisposableEffect(Unit) {
         onDispose {
@@ -145,8 +149,24 @@ fun NoteEditorScreen(
                                 stopRecording()
                             }
                         } else {
-                            pendingStartRecording = true
-                            recordPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            val shouldShowRationale =
+                                ActivityCompat.shouldShowRequestPermissionRationale(
+                                    activity,
+                                    Manifest.permission.RECORD_AUDIO
+                                )
+
+                            if (shouldShowRationale) {
+                                // User denied before (can ask again)
+                                pendingStartRecording = true
+                                recordPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                            } else {
+                                // Permission permanently denied
+                                Toast.makeText(
+                                    context,
+                                    "Microphone permission denied. Enable it from Settings.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
                     }) {
                         Icon(
