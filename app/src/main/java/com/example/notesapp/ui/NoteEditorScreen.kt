@@ -4,6 +4,7 @@ package com.example.notesapp.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -156,7 +157,11 @@ fun NoteEditorScreen(
                     Button(
                         onClick = {
                             val text = textState.text.trim()
-                            if (text.isNotEmpty()) {
+                            if (
+                                text.isNotEmpty() ||
+                                selectedImage != null ||
+                                voicePath != null
+                            ) {
                                 if (noteId == null) {
                                     viewModel.addNote(text, selectedImage, voicePath)
                                 } else {
@@ -169,6 +174,14 @@ fun NoteEditorScreen(
                                     )
                                 }
                                 onBack()
+                            } else {
+                                Toast
+                                    .makeText(
+                                        context,
+                                        "Add text, image, or voice",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    .show()
                             }
                         },
                         modifier = Modifier.padding(end = 8.dp)
